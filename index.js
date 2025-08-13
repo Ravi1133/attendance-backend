@@ -8,7 +8,7 @@ dotenv.config()
 const app = express()
 app.use(express.json())
 app.use(cors())
-let port = process.env.port
+let port = process.env.PORT
 console.log("urlDb", process.env.DB_URL)
 app.get("/healthCheck", (req, res) => {
     res.json({ message: "working" })
