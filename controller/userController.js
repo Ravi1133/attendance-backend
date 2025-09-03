@@ -1,4 +1,4 @@
-const { userRegisterService, addRoleService, userAddService, userLoginService, markAttendenceService, getAllRolesService, addClientService, getClientService, getAttendenceDataService, getAllUserService } = require("../service/userService");
+const { userRegisterService, addRoleService, userAddService, userLoginService, markAttendenceService, getAllRolesService, addClientService, getClientService, getAttendenceDataService, getAllUserService, deleteClientService, updateClientStatusService, updateUserStatusService } = require("../service/userService");
 
 const userAdd=(req,res)=>{ return userAddService(req,res)}
 
@@ -9,6 +9,9 @@ const getAttendenceData=(req,res)=>{return getAttendenceDataService(req,res) }
 const getAllRoles =(req,res)=>{return getAllRolesService(req,res)}
 const getAllUser =(req,res)=>{return getAllUserService(req,res)}
 const addClient =(req,res)=>{return addClientService(req,res)}
+const updateClientStatus =(req,res)=>{return updateClientStatusService(req,res)}
+const updateUserStatus =(req,res)=>{return updateUserStatusService(req,res)}
+
 
 const getClient =(req,res)=>{return getClientService(req,res)}
 
@@ -22,5 +25,7 @@ userLogin,
     getAllUser,
     addClient,
     getClient,
-    getAttendenceData
+    getAttendenceData,
+    updateClientStatus,
+    updateUserStatus
 }

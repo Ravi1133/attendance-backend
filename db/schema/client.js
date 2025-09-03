@@ -25,6 +25,12 @@ const clientSchema=mongoose.Schema({
         },pincode:{
             type:String,
             require:true
+        },
+        status:{
+            type:String,
+            default:"ACTIVE",
+            enum:["ACTIVE","INACTIVE"],
+            require:true
         }
 })
 

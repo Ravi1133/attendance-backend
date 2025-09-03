@@ -1,5 +1,5 @@
 const router =require("express")
-const { addRole, userAdd, userLogin, markAttendence, getAllRoles, getAllUser, addClient, getClient, getAttendenceData } = require("../controller/userController")
+const { addRole, userAdd, userLogin, markAttendence, getAllRoles, getAllUser, addClient, getClient, getAttendenceData, updateClientStatus, updateUserStatus } = require("../controller/userController")
 const { validateRole, validateUser, validateAttendence, validateClient, validateClientFetch, checkAttendanceDataSchema, validateCheckAttendence } = require("../util/validators")
 const { verifyToken } = require("../util")
 const { addClientService, getClientService } = require("../service/userService")
@@ -17,6 +17,9 @@ userRouter.post("/getAttendenceData",verifyToken,validateCheckAttendence,getAtte
 userRouter.get("/getRoles",getAllRoles)
 userRouter.post("/getUsers",getAllUser)
 userRouter.post("/addClient",validateClient,addClient)
+userRouter.post("/updateClientStatus/:id",updateClientStatus)
+userRouter.post("/updateUserStatus/:id",updateUserStatus)
+
 // userRouter.put("/updateClient",updateClient)
 // userRouter.get("/updateClient",getClient)
 userRouter.post("/getClient",validateClientFetch,getClient)

@@ -65,14 +65,14 @@ const userLoginService = async (req, res) => {
     try {
         console.log("req.body", req.body)
         let { mobile, password } = req.body
-        let userData = await userModel.findOne({ mobile: mobile }).populate("roleId","roleName")
+        let userData = await userModel.findOne({ mobile: mobile }).populate("roleId", "roleName")
         console.log("userData", userData)
         let login = await comparePassword(password, userData.password)
         console.log("login", login)
         if (login) {
             userData = JSON.parse(JSON.stringify(userData))
             let token = createToken(userData)
-            res.send({ message: "success", token ,userData})
+            res.send({ message: "success", token, userData })
         } else {
             res.status(400).send({ message: "login failed" })
         }
@@ -90,14 +90,24 @@ const markAttendenceService = async (req, res) => {
         if (!["admin", "manager"].includes(role.roleName)) {
             res.status(400).send({ message: "Operation Not Allowed" })
         }
-        let { AttendanceType, shift, status, date, userId,clientId } = req.body
+        let { AttendanceType, shift, status, date, userId, clientId } = req.body
+        let userData = await userModel.findById(userId)
+        let clientData = await clientModel.findById(clientId)
+        if(userData.status!="ACTIVE"){
+            res.status(400).send({ message: "User Is Inactive" })
+            return
+        }
+        if(clientData.status!="ACTIVE"){
+            res.status(400).send({ message: "Client Is Inactive" })
+            return 
+        }
         let foundAlreadyMarked = await attendenceModel.findOne({ userId, date, status })
         if (foundAlreadyMarked) {
             res.status(400).send({ message: "Already Marked For the day" })
             return
         }
         let attendenceObj = attendenceModel({
-            AttendanceType, shift, status, date, userId,clientId,markedBy:req.user._id
+            AttendanceType, shift, status, date, userId, clientId, markedBy: req.user._id
         })
         let response = await attendenceObj.save()
         console.log("response", response)
@@ -114,41 +124,43 @@ const getAttendenceDataService = async (req, res) => {
         // if (req.query.id) {
         //     body = { _id: req.query.id }
         // }
-        let page=1
-        let pageSize=10
-        if(req.query.page){
-            page=req.query.page
+        let page = 1
+        let pageSize = 10
+        if (req.query.page) {
+            page = req.query.page
         }
-        if(req.query.pageSize){
-            pageSize=req.query.pageSize
+        if (req.query.pageSize) {
+            pageSize = req.query.pageSize
         }
 
         if (req.body) {
-            let tempArr={}
-            let keys=Object.keys(req.body)
-            if(keys.includes("userId")){
-                tempArr={...tempArr,userId:req.body.userId}
-                delete req.body.userId 
+            let tempArr = {}
+            let keys = Object.keys(req.body)
+            if (keys.includes("userId")) {
+                tempArr = { ...tempArr, userId: req.body.userId }
+                delete req.body.userId
             }
-            if(keys.includes("clientId")){
-                tempArr={...tempArr,clientId:req.body.clientId}
-                delete req.body.clientId 
+            if (keys.includes("clientId")) {
+                tempArr = { ...tempArr, clientId: req.body.clientId }
+                delete req.body.clientId
             }
-            Object.keys(req.body).map((item,index)=>{
-                tempArr={...tempArr,[item]:{$regex: req.body[item],$options:"i"}}
+            Object.keys(req.body).map((item, index) => {
+                tempArr = { ...tempArr, [item]: { $regex: req.body[item], $options: "i" } }
             })
-            body = { ...tempArr,...body,  }
+            body = { ...tempArr, ...body, }
         }
-        console.log("body",body)
-        let savedData = await attendenceModel.find(body).populate("userId","name email mobile").populate("markedBy","name email mobile").populate("clientId","name email mobile").skip((page-1)*pageSize).limit(pageSize) 
-        
-        res.send({ data: savedData, message: "Success",pagination:{
-            totalDocuemnt:savedData.length,
-            page:page,
-            pageSize:pageSize
-        }  })
+        console.log("body", body)
+        let savedData = await attendenceModel.find(body).populate("userId", "name email mobile").populate("markedBy", "name email mobile").populate("clientId", "name email mobile").skip((page - 1) * pageSize).limit(pageSize)
+
+        res.send({
+            data: savedData, message: "Success", pagination: {
+                totalDocuemnt: savedData.length,
+                page: page,
+                pageSize: pageSize
+            }
+        })
     } catch (err) {
-        console.log(err,"erro in get attendance")
+        console.log(err, "erro in get attendance")
         res.status(500).send({ message: "Something went wrong" })
     }
 }
@@ -169,23 +181,25 @@ const getAllUserService = async (req, res) => {
         if (req.query.roleId) {
             query = { roleId: req.query.roleId }
         }
-        
-        let page=1
-        let pageSize=10
-        if(req.query.page){
-            page=req.query.page
+
+        let page = 1
+        let pageSize = 10
+        if (req.query.page) {
+            page = req.query.page
         }
 
-        if(req.query.pageSize){
-            pageSize=req.query.pageSize
+        if (req.query.pageSize) {
+            pageSize = req.query.pageSize
         }
-        let userData = await userModel.find(query).skip((page-1)*pageSize).limit(pageSize).populate("roleId","roleName")
-        
-        res.send({userData ,pagination:{
-            totalDocuemnt:userData.length,
-            page:page,
-            pageSize:pageSize
-        }})
+        let userData = await userModel.find(query).skip((page - 1) * pageSize).limit(pageSize).populate("roleId", "roleName")
+
+        res.send({
+            userData, pagination: {
+                totalDocuemnt: userData.length,
+                page: page,
+                pageSize: pageSize
+            }
+        })
 
     } catch (err) {
         res.status(500).send({ message: "something went wrong" })
@@ -211,43 +225,82 @@ const addClientService = async (req, res) => {
         console.log("err", err.errorResponse.code)
         if (err.errorResponse.code == 11000) {
             res.status(400).send({ message: "Already presented" })
-        }else{
+        } else {
             res.status(500).send({ message: "Something went wrong" })
         }
+    }
+}
+const updateClientStatusService = async (req, res) => {
+    try {
+
+        let id = req.params.id
+        let status = req.body.status
+        console.log("id", id)
+        let deleteData = await clientModel.findByIdAndUpdate(id, { status: status })
+        if (deleteData) {
+
+            res.send({ message: "Success" })
+        } else {
+            res.status(400)({ message: "data Not Found" })
+
+        }
+
+    } catch (err) {
+
+    }
+}
+
+const updateUserStatusService = async (req, res) => {
+    try {
+
+        let id = req.params.id
+        let status = req.body.status
+        console.log("id", id)
+        let deleteData = await userModel.findByIdAndUpdate(id, { status: status })
+        if (deleteData) {
+            res.send({ message: "Success" })
+        } else {
+            res.status(400)({ message: "data Not Found" })
+        }
+
+    } catch (err) {
+
     }
 }
 const getClientService = async (req, res) => {
     try {
         let body = {}
-        let page=1
-        let pageSize=10
-        if(req.query.page){
-            page=req.query.page
+        let page = 1
+        let pageSize = 10
+        if (req.query.page) {
+            page = req.query.page
         }
-        if(req.query.pageSize){
-            pageSize=req.query.pageSize
+        if (req.query.pageSize) {
+            pageSize = req.query.pageSize
         }
 
         if (req.query.id) {
             body = { _id: req.query.id }
         }
         if (req.body) {
-            let tempArr={}
-            Object.keys(req.body).map((item,index)=>{
-                tempArr={...tempArr,[item]:{$regex: req.body[item],$options:"i"}}
+            let tempArr = {}
+            Object.keys(req.body).map((item, index) => {
+                tempArr = { ...tempArr, [item]: { $regex: req.body[item], $options: "i" } }
             })
-            body = { ...tempArr,...body,  }
+            body = { ...tempArr, ...body, }
         }
-        console.log("body",body)
-        let savedData = await clientModel.find(body).skip((page-1)*pageSize).limit(pageSize)
+        console.log("body", body)
+        let savedData = await clientModel.find(body).skip((page - 1) * pageSize).limit(pageSize)
         // let totalDocuemnt=await clientModel.countdocuemnt().skip((page-1)*pageSize).limit(pageSize)
-        res.send({ data: savedData, message: "Success",pagination:{
-            totalDocuemnt:savedData.length,
-            page:page,
-            pageSize:pageSize
-        } })
+        res.send({
+            data: savedData, message: "Success", pagination: {
+                totalDocuemnt: savedData.length,
+                page: page,
+                pageSize: pageSize
+            }
+        })
     } catch (err) {
-        console.log(err,"err")
+        console.log(err, "err")
         res.status(500).send({ message: "Something went wrong" })
     }
 }
@@ -266,5 +319,7 @@ module.exports = {
     getAllUserService,
     getClientService,
     addClientService,
-    getAttendenceDataService
+    getAttendenceDataService,
+    updateClientStatusService,
+    updateUserStatusService
 }
