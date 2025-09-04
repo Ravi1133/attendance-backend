@@ -58,7 +58,7 @@ app.get("/metrics", async (req, res) => {
   res.end(await register.metrics());
 });
 
-app.listen(port, () => {
+app.listen(port, "0.0.0.0",() => {
     setTimeout(() => {
         connection()
     }, 1000);
