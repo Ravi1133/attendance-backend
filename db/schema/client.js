@@ -8,12 +8,11 @@ const clientSchema=mongoose.Schema({
         
         gst:{
             type:String,
-            require:true
+            require:false
         },
         mobile:{
             type:String,
-            
-            require:true
+            require:false
         },email:{
             type:String,
             unique:true,

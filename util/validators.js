@@ -16,7 +16,7 @@ const userSchema = Joi.object({
 
 const clientSchema = Joi.object({
     name: Joi.string().min(1).required(),
-    mobile: Joi.string().pattern(/^[6-9]\d{9}$/).required(), // basic Indian mobile validation
+    mobile: Joi.string().pattern(/^[6-9]\d{9}$/).optional(), // basic Indian mobile validation
     email: Joi.string().email().optional(),
     address: Joi.string().required(),
     pincode: Joi.string().length(6).pattern(/^[1-9][0-9]{5}$/).required(), // Indian pincode
