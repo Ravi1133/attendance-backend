@@ -22,7 +22,10 @@ client.collectDefaultMetrics({register})
 dotenv.config()
 const app = express()
 app.use(express.json())
-app.use(cors())
+app.use(cors({
+     origin: 'https://shovel.co.in/',
+  credentials: true,
+}))
 let port = process.env.PORT
 console.log("urlDb", process.env.DB_URL)
 
