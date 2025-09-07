@@ -23,7 +23,7 @@ dotenv.config()
 const app = express()
 app.use(express.json())
 app.use(cors({
-     origin: 'https://shovel.co.in',
+     origin: '*',
   credentials: true,
 }))
 let port = process.env.PORT
