@@ -41,6 +41,7 @@ const httpRequestsTotal=new client.Counter({
 
 register.registerMetric(httpRequestsTotal)
 app.use((req,res,next)=>{
+    console.log(req.headers,"req.headers")
     res.on("finish",()=>{
         httpRequestsTotal.inc({method:req.method,route:req.path,status:res.statusCode})
     })
