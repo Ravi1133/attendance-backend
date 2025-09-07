@@ -22,7 +22,14 @@ client.collectDefaultMetrics({register})
 dotenv.config()
 const app = express()
 app.use(express.json())
-app.use(cors())
+
+app.use(cors({
+  origin: '*', // For testing, allow all origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
 let port = process.env.PORT
 console.log("urlDb", process.env.DB_URL)
 
