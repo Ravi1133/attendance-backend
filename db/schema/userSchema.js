@@ -16,7 +16,7 @@ const userSchema = mongoose.Schema({
     },
     adhar: {
         type: String,
-        unique: true,
+        // unique: true,
         index: true,
         require: true
     },
