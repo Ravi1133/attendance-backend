@@ -13,14 +13,35 @@ const userSchema = Joi.object({
     pincode: Joi.string().length(6).pattern(/^[1-9][0-9]{5}$/).required(), // Indian pincode
     dob: Joi.string().optional() // optionally validate as a date: Joi.date().iso().required()
 });
+const userUpdateSchema = Joi.object({
+    name: Joi.string().min(1).optional().allow(""),
+    roleId: Joi.string().optional(),
+    adhar: Joi.string().optional().allow(""),
+    pan: Joi.string().optional(),
+    mobile: Joi.string().pattern(/^[6-9]\d{9}$/).optional().messages({"string.pattern.base":"Required Valid Mobile Number","any.required": "Mobile number is required"}), // basic Indian mobile validation
+    email: Joi.string().email().optional().allow(""),
+    address: Joi.string().optional(),
+    pincode: Joi.string().length(6).pattern(/^[1-9][0-9]{5}$/).optional(), // Indian pincode
+    dob: Joi.string().optional() // optionally validate as a date: Joi.date().iso().required()
+});
 
 const clientSchema = Joi.object({
     name: Joi.string().min(1).required(),
     mobile: Joi.string().pattern(/^[6-9]\d{9}$/).optional().allow(""), // basic Indian mobile validation
-    email: Joi.string().email().optional().allow(""),
+    email: Joi.string().email().required().allow(""),
     address: Joi.string().required(),
     pincode: Joi.string().length(6).pattern(/^[1-9][0-9]{5}$/).required(), // Indian pincode
     gst:Joi.string().optional().pattern(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/)
+});
+const updateclientSchema = Joi.object({
+    name: Joi.string().min(1).optional().allow(""),
+    mobile: Joi.string().pattern(/^[6-9]\d{9}$/).optional().allow(""), // basic Indian mobile validation
+    email: Joi.string().email().optional().allow(""),
+    address: Joi.string().optional().allow(""),
+    pincode: Joi.string().length(6).pattern(/^[1-9][0-9]{5}$/).optional(), // Indian pincode
+    gst:Joi.string().optional().pattern(/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/).allow("")
+}).required().min(1).messages({
+    "object.min": "Minimum 1 Feild Required",
 });
 const clientSchemaFetch = Joi.object({
     name: Joi.string().min(1).optional(),
@@ -158,9 +179,29 @@ function validateUser(req, res, next) {
     }
 }
 
+function validateUpdateUser(req, res, next) {
+    console.log("validateRole", req.body)
+    let { error, value } = userUpdateSchema.validate(req.body);
+    if (error) {
+        return res.status(400).send({ message: error.details[0].message });
+    } else {
+        next()
+    }
+}
+
 function validateClient(req, res, next) {
     console.log("validateRole", req.body)
     let { error, value } = clientSchema.validate(req.body);
+    if (error) {
+        return res.status(400).send({ message: error.details[0].message });
+    } else {
+        next()
+    }
+}
+
+function validateUpdateClient(req, res, next) {
+    console.log("validateRole", req.body)
+    let { error, value } = updateclientSchema.validate(req.body);
     if (error) {
         return res.status(400).send({ message: error.details[0].message });
     } else {
@@ -211,5 +252,7 @@ module.exports = {
     validateClient,
     validateClientFetch,
     validateCheckAttendence,
-    validateCheckChangePassword
+    validateCheckChangePassword,
+    validateUpdateClient,
+    validateUpdateUser
 }

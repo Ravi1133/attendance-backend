@@ -15,9 +15,26 @@ const userAddService = async (req, res) => {
         console.log("dbResponse", dbResponse)
         res.send({ message: "success" })
     } catch (err) {
+          if (err?.errorResponse?.code == 11000) {
+            res.status(400).send({ message: "Already presented" })
+        }else{
+            res.send({ message: "Something went wrong" })
+        }
+    }
+}
+const userUpdateService = async (req, res) => {
+    try {
+        let id=req.params.id
+        console.log(req.body, "req.body")
+        let userObj = await userModel.findByIdAndUpdate(id,req.body,{new:true,runValidators:true}).lean()
+        console.log("userObj", userObj)
+        
+        res.send({ message: "Successfully Update",data:userObj })
+    } catch (err) {
         console.log(err, "error in addUser")
     }
 }
+
 const clientAddService = async (req, res) => {
     try {
         console.log(req.body, "req.body")
@@ -232,6 +249,25 @@ const addClientService = async (req, res) => {
         }
     }
 }
+const updateClientService = async (req, res) => {
+    try {
+        let id=req.params.id
+        let payload = {...req.body}
+        console.log("payload", payload)
+
+        let clientObj =await clientModel.findByIdAndUpdate( id,payload,{new :true,runValidators:true}).lean()
+        console.log("clientObj",clientObj)
+        res.send({ message: "Successfully Updated" ,data:clientObj})
+    } catch (err) {
+        console.log("err", err)
+        if (err?.errorResponse?.code == 11000) {
+            res.status(400).send({ message: "Already presented" })
+        } else {
+            res.status(500).send({ message: "Something went wrong" })
+        }
+    }
+}
+
 const changePasswordService = async (req, res) => {
     try {
         let { newPassword, userId, } = req.body
@@ -337,5 +373,7 @@ module.exports = {
     getAttendenceDataService,
     updateClientStatusService,
     updateUserStatusService,
-    changePasswordService
+    changePasswordService,
+    updateClientService,
+    userUpdateService
 }
