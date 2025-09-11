@@ -5,7 +5,7 @@ const { default: mongoose } = require("mongoose");
 const userSchema = Joi.object({
     name: Joi.string().min(1).required(),
     roleId: Joi.string().required(),
-    adhar: Joi.string().optional().allow(""),
+    adhar: Joi.string().required().allow(""),
     pan: Joi.string().optional(),
     mobile: Joi.string().pattern(/^[6-9]\d{9}$/).required().messages({"string.pattern.base":"Required Valid Mobile Number","any.required": "Mobile number is required"}), // basic Indian mobile validation
     email: Joi.string().email().optional().allow(""),
