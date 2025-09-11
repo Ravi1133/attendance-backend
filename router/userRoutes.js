@@ -1,6 +1,6 @@
 const router =require("express")
-const { addRole, userAdd, userLogin, markAttendence, getAllRoles, getAllUser, addClient, getClient, getAttendenceData, updateClientStatus, updateUserStatus } = require("../controller/userController")
-const { validateRole, validateUser, validateAttendence, validateClient, validateClientFetch, checkAttendanceDataSchema, validateCheckAttendence } = require("../util/validators")
+const { addRole, userAdd, userLogin, markAttendence, getAllRoles, getAllUser, addClient, getClient, getAttendenceData, updateClientStatus, updateUserStatus, changePassword } = require("../controller/userController")
+const { validateRole, validateUser, validateAttendence, validateClient, validateClientFetch, checkAttendanceDataSchema, validateCheckAttendence, validateCheckChangePassword } = require("../util/validators")
 const { verifyToken } = require("../util")
 const { addClientService, getClientService } = require("../service/userService")
 const userRouter=router()
@@ -16,6 +16,8 @@ userRouter.post("/getAttendenceData",verifyToken,validateCheckAttendence,getAtte
 
 userRouter.get("/getRoles",getAllRoles)
 userRouter.post("/getUsers",getAllUser)
+userRouter.post("/changePassword",verifyToken,validateCheckChangePassword,changePassword)
+
 userRouter.post("/addClient",validateClient,addClient)
 userRouter.post("/updateClientStatus/:id",updateClientStatus)
 userRouter.post("/updateUserStatus/:id",updateUserStatus)

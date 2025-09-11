@@ -93,13 +93,13 @@ const markAttendenceService = async (req, res) => {
         let { AttendanceType, shift, status, date, userId, clientId } = req.body
         let userData = await userModel.findById(userId)
         let clientData = await clientModel.findById(clientId)
-        if(userData.status!="ACTIVE"){
+        if (userData.status != "ACTIVE") {
             res.status(400).send({ message: "User Is Inactive" })
             return
         }
-        if(clientData.status!="ACTIVE"){
+        if (clientData.status != "ACTIVE") {
             res.status(400).send({ message: "Client Is Inactive" })
-            return 
+            return
         }
         let foundAlreadyMarked = await attendenceModel.findOne({ userId, date, status })
         if (foundAlreadyMarked) {
@@ -191,17 +191,19 @@ const getAllUserService = async (req, res) => {
         if (req.query.pageSize) {
             pageSize = req.query.pageSize
         }
+        let countDoc = await userModel.countDocuments(query)
         let userData = await userModel.find(query).skip((page - 1) * pageSize).limit(pageSize).populate("roleId", "roleName")
 
         res.send({
             userData, pagination: {
-                totalDocuemnt: userData.length,
+                totalDocuemnt: countDoc,
                 page: page,
                 pageSize: pageSize
             }
         })
 
     } catch (err) {
+        console.log(err, "err in getAll user")
         res.status(500).send({ message: "something went wrong" })
     }
 }
@@ -228,6 +230,19 @@ const addClientService = async (req, res) => {
         } else {
             res.status(500).send({ message: "Something went wrong" })
         }
+    }
+}
+const changePasswordService = async (req, res) => {
+    try {
+        let { newPassword, userId, } = req.body
+        if(req.user.roleName !=="admin"){
+            res.status(400).send({ message: "Not Authorised For This Action" })
+        }
+        let userData = await userModel.findByIdAndUpdate(userId, { password: await hashPassword(newPassword) })
+        res.send({ message: "Pawword is Changed" })
+
+    } catch (err) {
+        res.status(500).send({ message: "Something went wrong" })
     }
 }
 const updateClientStatusService = async (req, res) => {
@@ -321,5 +336,6 @@ module.exports = {
     addClientService,
     getAttendenceDataService,
     updateClientStatusService,
-    updateUserStatusService
+    updateUserStatusService,
+    changePasswordService
 }
